@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>商品取材フォーム — フルフル</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/form.css">
+</head>
+<body>
+
+  <!-- ヘッダー N1a -->
+  <header class="app-header" role="banner">
+    <div class="container">
+      <div class="app-header__inner">
+        <span class="wordmark">フルフル<span>取材</span></span>
+        <span style="font-size: var(--text-sm); color: var(--color-ink-faint);">商品取材フォーム</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro-section">
+      <div class="container--form">
+
+        <p class="intro-kicker">フルフル 商品マスタ取材</p>
+        <h1 class="intro-title">商品のことを、<br>教えてください。</h1>
+        <p class="intro-lead">
+          8つの質問に、一問一答でお答えください。
+        </p>
+        <p class="intro-note">
+          全部埋まらなくて大丈夫です。分かるところだけで結構です。<br>
+          空欄は「（後で）」として記録します。途中で閉じても、<br>
+          次に開いたとき同じ画面から再開できます。
+        </p>
+
+        <!-- 入口フォーム -->
+        <form id="intro-form" novalidate>
+          <div class="field-group">
+
+            <!-- 商品選択 -->
+            <div class="field">
+              <label for="product-select">
+                商品名<span class="field-required" aria-label="必須">*</span>
+              </label>
+              <div class="select-wrap">
+                <select
+                  id="product-select"
+                  class="select"
+                  required
+                  aria-required="true"
+                  aria-describedby="product-error"
+                >
+                  <option value="">— 商品を選んでください —</option>
+                  <!-- JS で PRODUCTS を注入 -->
+                </select>
+              </div>
+              <span id="product-error" class="field-error" role="alert" aria-live="polite"></span>
+            </div>
+
+            <!-- その他：自由入力（product-select が "other" のときに表示） -->
+            <div class="field" id="other-product-field" hidden>
+              <label for="other-product" class="sr-only">商品名（自由入力）</label>
+              <input
+                type="text"
+                id="other-product"
+                class="input"
+                placeholder="商品名をそのまま入力"
+                aria-required="false"
+                aria-label="商品名（自由入力）"
+                maxlength="60"
+              >
+              <span id="other-product-error" class="field-error" role="alert" aria-live="polite"></span>
+            </div>
+
+            <!-- 回答者名 -->
+            <div class="field">
+              <label for="responder-name">
+                回答者のお名前<span class="field-required" aria-label="必須">*</span>
+              </label>
+              <input
+                type="text"
+                id="responder-name"
+                class="input"
+                placeholder="例：田中 / 製造担当 など"
+                required
+                aria-required="true"
+                aria-describedby="name-error name-hint"
+                maxlength="40"
+              >
+              <span id="name-hint" class="field-hint">
+                公開には使いません。記録の管理用です。
+              </span>
+              <span id="name-error" class="field-error" role="alert" aria-live="polite"></span>
+            </div>
+
+          </div>
+
+          <!-- 途中再開の通知（localStorage にセッションがある場合に表示） -->
+          <div id="resume-banner" hidden
+            style="background: var(--color-paper-2); border: 1px solid var(--color-line);
+                   border-radius: var(--radius-md); padding: var(--space-md);
+                   margin-bottom: var(--space-lg);">
+            <p style="margin-bottom: var(--space-sm); font-weight: 600;">前回の途中から再開しますか？</p>
+            <p id="resume-desc" style="font-size: var(--text-sm); color: var(--color-ink-soft); margin-bottom: var(--space-sm);"></p>
+            <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+              <button type="button" id="btn-resume" class="btn btn-outline">前回の続きから再開</button>
+              <button type="button" id="btn-new-session" class="btn btn-ghost">最初からはじめる</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-accent" id="btn-start" style="width: 100%;">
+            はじめる →
+          </button>
+        </form>
+
+        <!-- ストレージ非対応の警告（プライベートブラウズ等） -->
+        <p id="storage-warning" hidden
+          style="font-size: var(--text-sm); color: var(--color-ink-faint);
+                 margin-top: var(--space-sm); padding-left: var(--space-sm);
+                 border-left: 2px solid var(--color-line);">
+          このブラウザの設定では途中保存ができません。
+          ブラウザを閉じると入力内容が消えます。
+          完了まで続けて入力するか、通常のブラウズモードでお使いください。
+        </p>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer" role="contentinfo">
+    <div class="container">
+      フルフル 商品マスタ取材フォーム — 社内業務用・非公開
+    </div>
+  </footer>
+
+  <!-- スクリプト -->
+  <script src="config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script>
+    /* -------- 商品セレクトの注入 -------- */
+    const sel = document.getElementById("product-select");
+    PRODUCTS.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.value;
+      opt.textContent = p.label;
+      sel.appendChild(opt);
+    });
+
+    /* -------- その他フィールドの表示制御 -------- */
+    const otherField = document.getElementById("other-product-field");
+    const otherInput = document.getElementById("other-product");
+    sel.addEventListener("change", () => {
+      const isOther = sel.value === "other";
+      otherField.hidden = !isOther;
+      otherInput.required = isOther;
+      otherInput.setAttribute("aria-required", isOther ? "true" : "false");
+    });
+
+    /* -------- 再開バナー -------- */
+    const saved = loadSession();
+    if (isValidSession(saved)) {
+      const banner = document.getElementById("resume-banner");
+      const desc   = document.getElementById("resume-desc");
+      banner.hidden = false;
+
+      const productLabel = (() => {
+        if (saved.productValue === "other") return saved.productOther || "その他";
+        const found = PRODUCTS.find(p => p.value === saved.productValue);
+        return found ? found.label : saved.productValue;
+      })();
+      const savedDate = new Date(saved.savedAt).toLocaleDateString("ja-JP");
+      const qIdx = Math.min(saved.currentIndex || 0, TOTAL_QUESTIONS - 1);
+      const q = QUESTIONS[qIdx];
+      const qLabel = q
+        ? (q.supplement ? `補足${q.label}` : `Q${q.number}`)
+        : "完了済み";
+      desc.textContent = `${savedDate} 保存 — ${productLabel}（${saved.responderName || "名前未入力"}）— ${qLabel} まで記入済み`;
+
+      document.getElementById("btn-resume").addEventListener("click", () => {
+        sessionStorage.setItem("fullfull_interview_current", JSON.stringify(saved));
+        window.location.href = "question.html";
+      });
+      document.getElementById("btn-new-session").addEventListener("click", () => {
+        clearSession();
+        banner.hidden = true;
+      });
+    }
+
+    /* -------- ストレージ警告 -------- */
+    if (!HAS_STORAGE) {
+      document.getElementById("storage-warning").hidden = false;
+    }
+
+    /* -------- フォーム送信 -------- */
+    document.getElementById("intro-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      let valid = true;
+
+      // 商品選択バリデーション
+      const productEl = document.getElementById("product-select");
+      const productErr = document.getElementById("product-error");
+      if (!productEl.value) {
+        productErr.textContent = "商品を選択してください";
+        productErr.classList.add("is-visible");
+        productEl.classList.add("is-error");
+        valid = false;
+      } else {
+        productErr.textContent = "";
+        productErr.classList.remove("is-visible");
+        productEl.classList.remove("is-error");
+      }
+
+      // その他：自由入力バリデーション
+      if (productEl.value === "other") {
+        const otherErr = document.getElementById("other-product-error");
+        if (!otherInput.value.trim()) {
+          otherErr.textContent = "商品名を入力してください";
+          otherErr.classList.add("is-visible");
+          otherInput.classList.add("is-error");
+          valid = false;
+        } else {
+          otherErr.textContent = "";
+          otherErr.classList.remove("is-visible");
+          otherInput.classList.remove("is-error");
+        }
+      }
+
+      // 回答者名バリデーション
+      const nameEl = document.getElementById("responder-name");
+      const nameErr = document.getElementById("name-error");
+      if (!nameEl.value.trim()) {
+        nameErr.textContent = "お名前を入力してください（公開には使いません）";
+        nameErr.classList.add("is-visible");
+        nameEl.classList.add("is-error");
+        valid = false;
+      } else {
+        nameErr.textContent = "";
+        nameErr.classList.remove("is-visible");
+        nameEl.classList.remove("is-error");
+      }
+
+      if (!valid) return;
+
+      // セッション生成
+      const session = {
+        productValue: productEl.value,
+        productOther: otherInput.value.trim(),
+        responderName: nameEl.value.trim(),
+        answers: {},
+        currentIndex: 0,
+        startedAt: new Date().toISOString(),
+        savedAt: new Date().toISOString(),
+      };
+
+      saveSession(session);
+      sessionStorage.setItem("fullfull_interview_current", JSON.stringify(session));
+      window.location.href = "question.html";
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* Hallmark · macrostructure: Workbench · tone: editorial · anchor hue: warm red-orange
+ * genre: editorial · nav: N1a (wordmark + back link only) · footer: Ft1 (1-line credit)
+ * theme: custom-tuned (fullfull-brand · prototype-v2 tokens 完全継承)
+ * axes: paper-band=light · display-style=roman-serif(mincho) · accent-hue=warm
+ * form-specific additions: --color-progress, --color-step-*, --color-success, form spacing tokens
+ * source: prototype-v2/shared/css/tokens.css をそのまま引き継ぎ、フォーム専用トークンを追加
+ */
+
+:root {
+  /* --- 紙・地色（クリーム/生成り）--- prototype-v2 完全継承 */
+  --color-paper: oklch(97.5% 0.014 85);
+  --color-paper-2: oklch(94.5% 0.02 80);
+  --color-paper-3: oklch(91% 0.026 76);
+
+  /* --- 本文色（こんがりブラウン）--- prototype-v2 完全継承 */
+  --color-ink: oklch(28% 0.045 55);
+  --color-ink-soft: oklch(42% 0.04 55);
+  --color-ink-faint: oklch(58% 0.03 58);
+
+  /* --- アクセント（明太子のあたたかい赤橙）--- prototype-v2 完全継承 */
+  --color-accent: oklch(56% 0.19 34);
+  --color-accent-dark: oklch(45% 0.18 32);
+  --color-accent-soft: oklch(93% 0.045 40);
+
+  /* --- 罫線・枠 --- prototype-v2 完全継承 */
+  --color-line: oklch(85% 0.02 70);
+  --color-line-soft: oklch(90% 0.016 76);
+
+  /* --- 状態色 --- prototype-v2 完全継承 */
+  --color-disabled-bg: oklch(90% 0.012 70);
+  --color-disabled-ink: oklch(62% 0.015 65);
+  --color-focus-ring: oklch(56% 0.19 34);
+
+  /* --- フォーム専用追加トークン --- */
+  --color-progress-track: var(--color-line);
+  --color-progress-fill: var(--color-accent);
+  --color-success: oklch(52% 0.14 145);
+  --color-success-soft: oklch(94% 0.04 145);
+  --color-error: oklch(52% 0.18 25);
+  --color-error-soft: oklch(95% 0.04 25);
+  --color-input-bg: oklch(99% 0.008 85);
+  --color-input-border: var(--color-line);
+  --color-input-border-focus: var(--color-accent);
+  --color-input-border-error: var(--color-error);
+  --color-step-inactive: var(--color-line);
+  --color-step-active: var(--color-accent);
+  --color-step-done: var(--color-accent-dark);
+
+  /* --- フォント --- prototype-v2 完全継承 */
+  --font-display: "Hiragino Mincho ProN", "Yu Mincho", "游明朝", "Noto Serif JP", serif;
+  --font-body: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "游ゴシック", "Noto Sans JP", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* --- 4ptスペーシング --- prototype-v2 完全継承 */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  --space-3xl: 6.5rem;
+
+  /* --- タイプスケール（fluid）--- prototype-v2 完全継承 */
+  --text-sm: clamp(0.8rem, 0.77rem + 0.15vw, 0.9rem);
+  --text-base: clamp(0.98rem, 0.94rem + 0.2vw, 1.08rem);
+  --text-lg: clamp(1.1rem, 1.03rem + 0.35vw, 1.3rem);
+  --text-xl: clamp(1.35rem, 1.2rem + 0.7vw, 1.75rem);
+  --text-2xl: clamp(1.7rem, 1.4rem + 1.4vw, 2.4rem);
+  --text-display: clamp(2.1rem, 1.6rem + 2.4vw, 3.4rem);
+
+  /* --- フォーム専用サイズ --- */
+  --text-question: clamp(1.4rem, 1.2rem + 1vw, 2rem);
+  --text-input-lg: clamp(1.05rem, 0.98rem + 0.35vw, 1.2rem);
+
+  /* --- 角丸 --- prototype-v2 完全継承 */
+  --radius-sm: 3px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* --- イージング・時間 --- prototype-v2 完全継承 */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 350ms;
+
+  /* --- コンテンツ幅 --- prototype-v2 継承 + フォーム幅追加 */
+  --measure-read: 38rem;
+  --measure-wide: 60rem;
+  --measure-form: 34rem;   /* 質問画面：読みやすい幅に絞る */
+
+  /* --- 進捗バー --- */
+  --progress-h: 4px;
+  --progress-radius: 999px;
+
+  /* --- タップ領域（iOS最小44pt） --- */
+  --tap-min: 2.75rem;
+}

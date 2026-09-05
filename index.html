@@ -27,11 +27,11 @@
         <p class="intro-kicker">フルフル 商品マスタ取材</p>
         <h1 class="intro-title">商品のことを、<br>教えてください。</h1>
         <p class="intro-lead">
-          8つの質問に、一問一答でお答えください。
+          8つの質問＋補足3つに、一問一答でお答えください。
         </p>
         <p class="intro-note">
           全部埋まらなくて大丈夫です。分かるところだけで結構です。<br>
-          空欄は「（後で）」として記録します。途中で閉じても、<br>
+          空欄のまま進んでも構いません。途中で閉じても、<br>
           次に開いたとき同じ画面から再開できます。
         </p>
 
@@ -180,6 +180,11 @@
       desc.textContent = `${savedDate} 保存 — ${productLabel}（${saved.responderName || "名前未入力"}）— ${qLabel} まで記入済み`;
 
       document.getElementById("btn-resume").addEventListener("click", () => {
+        // 完了画面まで進んだが未送信のセッション（currentIndex = TOTAL_QUESTIONS）が
+        // 残っている場合、クランプせずに渡すと question.html 側で
+        // QUESTIONS[TOTAL_QUESTIONS] = undefined になり、
+        // 「何も入力できない画面」で固まる。渡す前にここでもクランプする。
+        saved.currentIndex = qIdx;
         sessionStorage.setItem("fullfull_interview_current", JSON.stringify(saved));
         window.location.href = "question.html";
       });

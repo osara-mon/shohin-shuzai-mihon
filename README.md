@@ -117,7 +117,7 @@ Google Apps Script のウェブアプリは `Content-Type: application/json` の
 - `open interview-app/index.html` でブラウザが開く
 - 商品選択 + 名前入力 → 「はじめる」 → question.html に遷移する
 - 各質問に回答 → Enter または「次へ」で次の質問に進む
-- Q8 まで進んで「完了して確認する」→ complete.html に遷移する
+- Q8＋補足①②③（計11問）まで進んで「完了して確認する」→ complete.html に遷移する
 - complete.html で「Google Sheetsへ送信」→「送信できませんでした」のフォールバックが表示される（URL未設定のため正常）
 - 「本文をコピー」でクリップボードにコピーされる（トーストが出る）
 - question.html でブラウザを閉じて再度 index.html を開く → 「前回の途中から再開しますか？」バナーが出る

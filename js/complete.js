@@ -24,6 +24,7 @@ if (!session) {
 if (!session) {
   // セッションが無ければ入口に戻す
   window.location.replace("index.html");
+  throw new Error("no session — redirecting to index.html");
 }
 
 /* -------- DOM 参照 -------- */

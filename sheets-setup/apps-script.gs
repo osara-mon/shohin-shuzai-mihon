@@ -159,12 +159,14 @@ function doOptions(e) {
  */
 function notifyReceived_(payload) {
   var TO   = "運用担当のメールアドレス@example.com";  // ← ここを書き換え
-  var SUBJ = "【フルフル取材】" + (payload.productLabel || payload.productValue || "無題") + " の回答が届きました";
+  // 送信ペイロード（js/submit.js の buildPayload）のキーは日本語（商品名・回答者名）。
+  // productLabel / productValue というキーは送信されないため、旧実装では常に「無題」になっていた。
+  var SUBJ = "【フルフル取材】" + (payload["商品名"] || "無題") + " の回答が届きました";
   var BODY = [
     "取材フォームから新しい回答が届きました。",
     "",
-    "商品: " + (payload.productLabel || payload.productValue || "-"),
-    "回答者: " + (payload.responderName || "-"),
+    "商品: " + (payload["商品名"] || "-"),
+    "回答者: " + (payload["回答者名"] || "-"),
     "送信時刻: " + new Date().toLocaleString("ja-JP"),
     "",
     "Google Sheets を開いて内容を確認してください。",

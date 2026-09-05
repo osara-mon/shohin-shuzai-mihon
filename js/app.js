@@ -44,10 +44,11 @@ if (!session) {
 // それでもなければ index.html に戻す
 if (!session || !session.productValue || !session.responderName) {
   window.location.replace("index.html");
+  throw new Error("no valid session — redirecting to index.html");
 }
 
 /* -------- 状態 -------- */
-let currentIndex = session.currentIndex || 0;
+let currentIndex = Math.min(session.currentIndex || 0, TOTAL_QUESTIONS - 1);
 // answers は session に含まれているものを使う（なければ空オブジェクト）
 if (!session.answers) session.answers = {};
 
@@ -168,7 +169,10 @@ if (btnSkip) {
 }
 
 // Enterキー（Shift+Enter は改行）
+// 日本語入力（IME）変換確定のEnterで誤って次へ進まないよう、
+// isComposing と keyCode 229（古いSafari/Android等の互換値）の両方で除外する。
 answerTextarea.addEventListener("keydown", (e) => {
+  if (e.isComposing || e.keyCode === 229) return;
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     goNext();

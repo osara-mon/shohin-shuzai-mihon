@@ -1,13 +1,17 @@
 /**
- * complete.js — 完了画面のロジック
+ * complete.js — 確認 → 完了画面のロジック
+ *
+ * 画面の流れ（2026-09-07 社長指示で3段階化）:
+ *   1. 質問の最後で「完了して確認する」→ この画面に来る（＝確認画面。まだ何も送信していない）
+ *   2. この画面で全11問の回答を見返せる。直したければ「質問に戻って直す」で question.html へ
+ *   3. 「完了する」を押すと初めて送信を実行する。成功したときだけ「記録しました」と表示する
  *
  * 責務:
- *   - sessionStorage から完了セッションを復元してプレビュー描画
- *   - 「Google Sheetsへ送信」ボタン
- *   - 「本文をコピー」ボタン
- *   - 「印刷用に表示」ボタン（window.print()）
- *   - 送信失敗時フォールバック表示（コピー + mailto）
- *   - 送信成功後 localStorage をクリア
+ *   - sessionStorage / localStorage から確認対象セッションを復元してプレビュー描画
+ *   - 「完了する」ボタン（＝送信。成功するまでは「まだ記録されていない」ことを明示）
+ *   - 送信失敗時のみ、代わりの送り方（本文をコピー／メールで送る）を表示
+ *   - 「印刷 / PDF保存」ボタン（送信状態に関わらず常時利用可）
+ *   - 送信成功後 localStorage をクリアし、見出しを「記録しました」に切り替える
  */
 
 /* -------- セッション復元 -------- */
@@ -27,9 +31,17 @@ if (!session) {
   throw new Error("no session — redirecting to index.html");
 }
 
+// 「質問に戻って直す」で question.html に戻ったとき、最新の回答内容
+// （最後の質問の回答を含む）で再開できるよう、sessionStorage の作業中キーを
+// この画面が持っている最新セッションで同期しておく。
+// （同期しないと、最後の質問の回答だけ古い状態に戻って見えるバグになる）
+sessionStorage.setItem("fullfull_interview_current", JSON.stringify(session));
+
 /* -------- DOM 参照 -------- */
+const pageTitle    = document.getElementById("page-title");
+const pageLead     = document.getElementById("page-lead");
+const backWrap     = document.getElementById("back-to-question-wrap");
 const btnSubmit    = document.getElementById("btn-submit");
-const btnCopy      = document.getElementById("btn-copy");
 const btnPrint     = document.getElementById("btn-print");
 const previewEl    = document.getElementById("answer-preview");
 const fallbackBox  = document.getElementById("fallback-box");
@@ -56,7 +68,7 @@ if (summaryDate) {
   summaryDate.textContent = d.toLocaleDateString("ja-JP");
 }
 
-/* -------- プレビュー描画 -------- */
+/* -------- プレビュー描画（全問・確認用） -------- */
 function renderPreview() {
   if (!previewEl) return;
 
@@ -109,59 +121,71 @@ function showToast(msg, type = "") {
   }, 3000);
 }
 
-/* -------- コピー -------- */
+/* -------- コピー（送信失敗時のフォールバックのみ） -------- */
 async function handleCopy() {
   const text = buildPlainText(session);
   const ok = await copyToClipboard(text);
   if (ok) {
     showToast("コピーしました", "success");
-    if (btnCopy) {
-      const orig = btnCopy.textContent;
-      btnCopy.textContent = "コピーしました ✓";
-      setTimeout(() => { btnCopy.textContent = orig; }, 2000);
+    if (btnFallbackCopy) {
+      const orig = btnFallbackCopy.textContent;
+      btnFallbackCopy.textContent = "コピーしました ✓";
+      setTimeout(() => { btnFallbackCopy.textContent = orig; }, 2000);
     }
   } else {
     showToast("コピーに失敗しました。テキストを手動で選択してください", "error");
   }
 }
 
-if (btnCopy) btnCopy.addEventListener("click", handleCopy);
 if (btnFallbackCopy) btnFallbackCopy.addEventListener("click", handleCopy);
 
-/* -------- 送信 -------- */
+/* -------- 完了する（＝送信） -------- */
 if (btnSubmit) {
   btnSubmit.addEventListener("click", async () => {
     // ローディング
     btnSubmit.classList.add("is-loading");
     btnSubmit.disabled = true;
+    if (pageTitle) pageTitle.textContent = "送信しています…";
+    if (fallbackBox) fallbackBox.classList.remove("is-visible");
 
     const result = await submitToSheets(session);
 
     btnSubmit.classList.remove("is-loading");
-    btnSubmit.disabled = false;
 
     if (result.ok) {
-      btnSubmit.textContent = "送信しました ✓";
+      // 成功したときだけ「記録しました」と明示する
+      btnSubmit.textContent = "記録しました ✓";
       btnSubmit.classList.add("is-success");
+      btnSubmit.disabled = true; // 二重送信を防ぐ
+      if (pageTitle) pageTitle.textContent = "記録しました";
+      if (pageLead) {
+        pageLead.textContent = "回答はGoogle Sheetsの商品マスタに保存されました。ご協力ありがとうございました。";
+      }
+      if (backWrap) backWrap.style.display = "none"; // 送信後は編集導線を隠す
       showToast("Google Sheetsに送信しました", "success");
       // セッションクリア（送信完了）
       clearSession();
       sessionStorage.removeItem("fullfull_interview_done");
       sessionStorage.removeItem("fullfull_interview_current");
     } else {
-      // フォールバック表示
+      // 失敗 — 「記録された」ように見せず、代わりの送り方だけを表示する
+      btnSubmit.disabled = false;
+      if (pageTitle) pageTitle.textContent = "送信できませんでした（まだ記録されていません）";
+      if (pageLead) {
+        pageLead.textContent = "自動送信は現在ご利用いただけません。下の方法で回答をお送りください。";
+      }
       if (fallbackBox) fallbackBox.classList.add("is-visible");
       showToast("送信できませんでした。コピーまたはメールでお送りください", "error");
     }
   });
 }
 
-/* -------- mailto -------- */
+/* -------- mailto（送信失敗時のフォールバックのみ） -------- */
 if (btnMailto) {
   btnMailto.addEventListener("click", () => openMailto(session));
 }
 
-/* -------- 印刷 -------- */
+/* -------- 印刷（常時利用可） -------- */
 if (btnPrint) {
   btnPrint.addEventListener("click", () => window.print());
 }
